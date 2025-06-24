@@ -1,5 +1,7 @@
 import pygame
 import sys
+import config
+import jogadorEfluxo
 
 # === CONFIGURAÇÃO BÁSICA ===
 pygame.init()
@@ -44,11 +46,11 @@ tela_y = (altura - tela_altura) // 2
 
 # === FUNÇÕES DE AÇÃO ===
 def jogar():
-    import jogadorEfluxo
-    jogadorEfluxo.executar()
+    jogadorEfluxo.executar(menu_principal)
 
 def instrucoes():
     fonte_menor = pygame.font.Font(None, 32)
+    fonte_destaque = pygame.font.Font(None, 40)
 
     texto_linhas = [
         "OBJETIVO:",
@@ -79,7 +81,6 @@ def instrucoes():
 
         for i, linha in enumerate(texto_linhas):
             if linha in ["OBJETIVO:", "Boa sorte!"]:
-                fonte_destaque = pygame.font.Font(None, 40)
                 texto_render = fonte_destaque.render(linha, True, cores["hover"])
             else:
                 texto_render = fonte_menor.render(linha, True, cores["branco"])
@@ -92,7 +93,6 @@ def instrucoes():
         clock.tick(60)
 
 def opcoes():
-    import config
     tempos = [10, 15, 20]
     rodadas = list(range(3, 21))
     sons = ["Ligado", "Desligado"]
@@ -105,7 +105,8 @@ def opcoes():
 
     rodando = True
     while rodando:
-        tela.fill(cores["preto"])
+        pygame.draw.rect(tela, cores["azul_escuro"], (tela_x-4, tela_y-4, tela_largura+8, tela_altura+8))
+        pygame.draw.rect(tela, cores["preto"], (tela_x, tela_y, tela_largura, tela_altura))
         mouse_pos = pygame.mouse.get_pos()
 
         for evento in pygame.event.get():
@@ -137,9 +138,9 @@ def opcoes():
                     rodando = False
 
         titulo = fonte_grande.render("Opções", True, cores["branco"])
-        tela.blit(titulo, (largura // 2 - titulo.get_width() // 2, 40))
+        tela.blit(titulo, (largura // 2 - titulo.get_width() // 2, 80))
 
-        y_base = 150
+        y_base = 200
 
         def desenhar_opcao(texto, valor, index, valores, y, dist_setas):
             label = fonte.render(texto, True, cores["branco"])
@@ -192,13 +193,17 @@ botoes = [
 fonte_titulo = pygame.font.Font(None, 84)
 titulo_jogo = fonte_titulo.render("ColorBlock & Matemática", True, (255, 165, 0))
 
+# === IMPORTAR IMAGEM DE FUNDO E ICONE ===
+menuimg = pygame.image.load("img/fundomenu.jpeg")
+iconeimg = pygame.image.load("img/icone.png")
+pygame.display.set_icon(iconeimg)
+
 # === LOOP DO MENU ===
 def menu_principal():
     while True:
-        tela.fill(cores["fundo"])
+        tela.blit(menuimg, (0, 0))
         mouse_pos = pygame.mouse.get_pos()
         tela.blit(titulo_jogo, (largura // 2 - titulo_jogo.get_width() // 2, 80))
-
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
