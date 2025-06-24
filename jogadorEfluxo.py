@@ -3,7 +3,7 @@ import random
 
 import config
 
-def executar():
+def executar(callback_menu):
     # === CONFIGURAÇÃO GERAL ===
     largura, altura = 800, 600
     linhas, colunas = 5, 6
@@ -60,13 +60,14 @@ def executar():
         while not nova_expr and tentativas < 100:
             nova_expr = gerarOperacao(random.choice(['+', '-', '*', '/']))
             if nova_expr and nova_expr[1] in respostas:
-                nova_expr = None  # já existe esse resultado
+                nova_expr = None
             tentativas += 1
         if nova_expr:
             perguntas[rodada] = nova_expr[0]
             respostas[rodada] = nova_expr[1]
-            return (perguntas[rodada], respostas[rodada])
-        return None
+            return True
+        return False
+
 
 
     # === FUNÇÕES DE DESENHO ===
@@ -101,8 +102,10 @@ def executar():
     pygame.display.set_caption("JOGO BLOCOS - Expressões")
     fonte = pygame.font.Font(None, 36)
     fonte_grande = pygame.font.Font(None, 84)
-    som_acerto = pygame.mixer.Sound("acerto.mp3")
-    som_erro = pygame.mixer.Sound("erro.mp3")
+    som_acerto = pygame.mixer.Sound("sons/acerto.mp3")
+    som_erro = pygame.mixer.Sound("sons/erro.mp3")
+    iconeimg = pygame.image.load("img/icone.png")
+    pygame.display.set_icon(iconeimg)
 
     expressoes = gerarVariasOperacoes(30)
     perguntas = [e for e, _ in expressoes[:config.total_rodada]]
@@ -117,6 +120,7 @@ def executar():
     pausado = False
     mensagem, tempo_mensagem = "", 0
     clock = pygame.time.Clock()
+
 
     # === LOOP PRINCIPAL ===
 
@@ -163,10 +167,8 @@ def executar():
                 if config.som_ativo:
                     som_erro.play()
                 vidas -= 1
-                nova = substituir_expressao_rodada(rodada, perguntas, respostas)
-                if nova:
-                    nova_expr, nova_resp = nova
-                    matriz_valores = gerar_matriz_valores([(nova_expr, nova_resp)])
+                if substituir_expressao_rodada(rodada, perguntas, respostas):
+                    matriz_valores = gerar_matriz_valores([(perguntas[rodada], respostas[rodada])])
             pausado = True
             tempo_inicial = pygame.time.get_ticks()
             tempo_mensagem = tempo_atual
@@ -208,6 +210,23 @@ def executar():
             cor_fundo = (0, 100, 0) if vidas > 0 else (100, 0, 0)
             cor_texto = cores["branco"]
 
+            def reiniciar_jogo():
+                nonlocal jogador_linha, jogador_coluna, vidas, rodada, tempo_inicial
+                nonlocal pausado, expressoes, perguntas, respostas, matriz_valores, matriz_cores
+                nonlocal mensagem, tempo_mensagem
+
+                # Reinicia as variáveis do jogo
+                jogador_linha, jogador_coluna = 0, 0
+                vidas, rodada = 3, 0
+                tempo_inicial = pygame.time.get_ticks()
+                pausado = False
+                expressoes = gerarVariasOperacoes(30)
+                perguntas = [e for e, _ in expressoes[:config.total_rodada]]
+                respostas = [r for _, r in expressoes[:config.total_rodada]]
+                matriz_valores = gerar_matriz_valores(expressoes)
+                matriz_cores = [[random.choice(list(cores.values())[:6]) for _ in range(colunas)] for _ in range(linhas)]
+                mensagem, tempo_mensagem = "", 0
+
             while True:
                 tela.fill(cor_fundo)
 
@@ -242,35 +261,16 @@ def executar():
                         rodar = False
                         pygame.quit()
                         exit()
-
+                    
                     if evento.type == pygame.MOUSEBUTTONDOWN:
                         if botao_novamente.collidepoint(evento.pos):
-                            # Reinicia as variáveis do jogo
-                            jogador_linha, jogador_coluna = 0, 0
-                            vidas, rodada = 3, 0
-                            tempo_inicial = pygame.time.get_ticks()
-                            pausado = False
-                            expressoes = gerarVariasOperacoes(30)
-                            perguntas = [e for e, _ in expressoes[:config.total_rodada]]
-                            respostas = [r for _, r in expressoes[:config.total_rodada]]
-                            matriz_valores = gerar_matriz_valores(expressoes)
-                            matriz_cores = [[random.choice(list(cores.values())[:6]) for _ in range(colunas)] for _ in range(linhas)]
-                            mensagem, tempo_mensagem = "", 0
+                            reiniciar_jogo()
                             break  # volta para o loop principal
 
                         if botao_menu.collidepoint(evento.pos):
-                            jogador_linha, jogador_coluna = 0, 0
-                            vidas, rodada = 3, 0
-                            tempo_inicial = pygame.time.get_ticks()
-                            pausado = False
-                            expressoes = gerarVariasOperacoes(30)
-                            perguntas = [e for e, _ in expressoes[:config.total_rodada]]
-                            respostas = [r for _, r in expressoes[:config.total_rodada]]
-                            matriz_valores = gerar_matriz_valores(expressoes)
-                            matriz_cores = [[random.choice(list(cores.values())[:6]) for _ in range(colunas)] for _ in range(linhas)]
-                            mensagem, tempo_mensagem = "", 0
-                            import main
-                            main.menu_principal()
+                            reiniciar_jogo()
+                            callback_menu()
+                            return
 
                         if botao_sair.collidepoint(evento.pos):
                             rodar = False
