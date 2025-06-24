@@ -108,7 +108,25 @@ def opcoes():
         pygame.draw.rect(tela, cores["azul_escuro"], (tela_x-4, tela_y-4, tela_largura+8, tela_altura+8))
         pygame.draw.rect(tela, cores["preto"], (tela_x, tela_y, tela_largura, tela_altura))
         mouse_pos = pygame.mouse.get_pos()
+        def desenhar_opcao(texto, valor, index, valores, y, dist_setas):
+                    label = fonte.render(texto, True, cores["branco"])
+                    tela.blit(label, (120, y))
 
+                    x_centro = 600
+                    seta_esq = pygame.Rect(x_centro - dist_setas - 30, y, 30, 40)
+                    seta_dir = pygame.Rect(x_centro + dist_setas, y, 30, 40)
+
+                    valor_render = fonte.render(str(valor), True, cores["branco"])
+                    valor_rect = valor_render.get_rect(center=(x_centro, y + 20))
+                    tela.blit(valor_render, valor_rect)
+
+                    pygame.draw.polygon(tela, cores["branco"] if index > 0 else cores["cinza"],
+                                        [(seta_esq.centerx + 5, y + 10), (seta_esq.centerx - 5, y + 20), (seta_esq.centerx + 5, y + 30)])
+                    pygame.draw.polygon(tela, cores["branco"] if index < len(valores) - 1 else cores["cinza"],
+                                        [(seta_dir.centerx - 5, y + 10), (seta_dir.centerx + 5, y + 20), (seta_dir.centerx - 5, y + 30)])
+
+                    return seta_esq, seta_dir
+        
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 sair()
@@ -142,24 +160,7 @@ def opcoes():
 
         y_base = 200
 
-        def desenhar_opcao(texto, valor, index, valores, y, dist_setas):
-            label = fonte.render(texto, True, cores["branco"])
-            tela.blit(label, (120, y))
-
-            x_centro = 600
-            seta_esq = pygame.Rect(x_centro - dist_setas - 30, y, 30, 40)
-            seta_dir = pygame.Rect(x_centro + dist_setas, y, 30, 40)
-
-            valor_render = fonte.render(str(valor), True, cores["branco"])
-            valor_rect = valor_render.get_rect(center=(x_centro, y + 20))
-            tela.blit(valor_render, valor_rect)
-
-            pygame.draw.polygon(tela, cores["branco"] if index > 0 else cores["cinza"],
-                                [(seta_esq.centerx + 5, y + 10), (seta_esq.centerx - 5, y + 20), (seta_esq.centerx + 5, y + 30)])
-            pygame.draw.polygon(tela, cores["branco"] if index < len(valores) - 1 else cores["cinza"],
-                                [(seta_dir.centerx - 5, y + 10), (seta_dir.centerx + 5, y + 20), (seta_dir.centerx - 5, y + 30)])
-
-            return seta_esq, seta_dir
+        
 
         # Tempo
         seta_esq_tempo, seta_dir_tempo = desenhar_opcao("Tempo por rodada:", tempos[tempo_index], tempo_index, tempos, y_base, dist_setas=35)

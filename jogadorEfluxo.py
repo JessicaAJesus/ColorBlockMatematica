@@ -88,11 +88,12 @@ def executar(callback_menu):
         pygame.draw.circle(tela, cores["preto"], (px, py), 18)       # borda
         pygame.draw.circle(tela, (0, 255, 255), (px, py), 15)         # bolinha
 
-    def gerar_matriz_valores(expressoes):
-        valores = list(set(val for _, val in expressoes))
+    def gerar_matriz_valores(respostas):
+        valores = respostas.copy()
         while len(valores) < linhas * colunas:
             novo = random.randint(2, 100)
-            if novo not in valores: valores.append(novo)
+            if novo not in valores:
+                valores.append(novo)
         random.shuffle(valores)
         return [[valores[i * colunas + j] for j in range(colunas)] for i in range(linhas)]
 
@@ -110,7 +111,7 @@ def executar(callback_menu):
     expressoes = gerarVariasOperacoes(30)
     perguntas = [e for e, _ in expressoes[:config.total_rodada]]
     respostas = [r for _, r in expressoes[:config.total_rodada]]
-    matriz_valores = gerar_matriz_valores(expressoes)
+    matriz_valores = gerar_matriz_valores(respostas)
     matriz_cores = [[random.choice(list(cores.values())[:6]) for _ in range(colunas)] for _ in range(linhas)]
 
     jogador_linha, jogador_coluna = 0, 0
@@ -168,7 +169,7 @@ def executar(callback_menu):
                     som_erro.play()
                 vidas -= 1
                 if substituir_expressao_rodada(rodada, perguntas, respostas):
-                    matriz_valores = gerar_matriz_valores([(perguntas[rodada], respostas[rodada])])
+                    matriz_valores = gerar_matriz_valores(respostas)
             pausado = True
             tempo_inicial = pygame.time.get_ticks()
             tempo_mensagem = tempo_atual
@@ -206,7 +207,7 @@ def executar(callback_menu):
             tela.blit(texto_msg, rect_msg)
 
         if rodada >= len(perguntas) or vidas <= 0:
-            fim = "Parabéns! Você venceu!" if vidas > 0 else "Você perdeu!"
+            fim = "Parabéns! Você venceu!" if vidas > 0 else "Fim de jogo!"
             cor_fundo = (0, 100, 0) if vidas > 0 else (100, 0, 0)
             cor_texto = cores["branco"]
 
@@ -223,7 +224,7 @@ def executar(callback_menu):
                 expressoes = gerarVariasOperacoes(30)
                 perguntas = [e for e, _ in expressoes[:config.total_rodada]]
                 respostas = [r for _, r in expressoes[:config.total_rodada]]
-                matriz_valores = gerar_matriz_valores(expressoes)
+                matriz_valores = gerar_matriz_valores(respostas)
                 matriz_cores = [[random.choice(list(cores.values())[:6]) for _ in range(colunas)] for _ in range(linhas)]
                 mensagem, tempo_mensagem = "", 0
 
